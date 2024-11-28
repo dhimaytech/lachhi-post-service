@@ -1,7 +1,8 @@
+from datetime import datetime
 from sqlalchemy import Column, Integer, String, Text, DateTime
 from sqlalchemy.sql import func
 from pydantic import BaseModel
-from app.database import Base
+from configurations.database import Base
 
 # SQLAlchemy Model
 class PostDB(Base):
