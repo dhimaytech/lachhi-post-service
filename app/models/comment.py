@@ -1,36 +1,37 @@
-from datetime import datetime
 from uuid import uuid4
+from datetime import datetime
 from sqlalchemy import Column, Text, DateTime, ForeignKey, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from pydantic import BaseModel
 from configurations.database import Base
 
-# SQLAlchemy Model
-class PostDB(Base):
-    __tablename__ = "posts"
 
-    post_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+class CommentDB(Base):
+    __tablename__ = "comments"
+
+    comment_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    post_id = Column(UUID(as_uuid=True), ForeignKey('posts.post_id'), nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.user_id'), nullable=False)
-    group_id = Column(UUID(as_uuid=True), ForeignKey('groups.group_id'), nullable=True)
+    parent_comment_id = Column(UUID(as_uuid=True), ForeignKey('comments.comment_id'), nullable=True)
     content = Column(Text, nullable=False)
     created_at = Column(DateTime, nullable=False, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
     __table_args__ = (
-        Index('idx_posts_user_id', 'user_id'),
-        Index('idx_posts_group_id', 'group_id'),
+        Index('idx_comments_post_id', 'post_id'),
     )
 
-# Pydantic Models
-class PostBase(BaseModel):
+
+class CommentBase(BaseModel):
     content: str
-    group_id: UUID | None = None
+    parent_comment_id: UUID | None = None
 
-class PostCreate(PostBase):
-    pass
+class CommentCreate(CommentBase):
+    post_id: UUID
 
-class Post(PostBase):
+class Comment(CommentBase):
+    comment_id: UUID
     post_id: UUID
     user_id: UUID
     created_at: datetime
